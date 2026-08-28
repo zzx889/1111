@@ -646,25 +646,21 @@ task.spawn(function()
 end)
 
 Window:EditOpenButton({
-    Title = "妥协脚本",
+    Title = "妥协脚本",
     Icon = "monitor",
     CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
-    -- 透明度设为0（完全透明）
     Transparency = 0,
     Color = ColorSequence.new(
-        Color3.fromHex("FFFFFF"), -- 纯白（渐变起点）
-        Color3.fromHex("333333")  -- 深灰（渐变终点）
+        Color3.fromHex("0096FF"), -- 蓝色（渐变起点）
+        Color3.fromHex("FFFFFF")  -- 白色（渐变终点）
     ),
     Draggable = true,
-    -- 添加亮框（白色描边，厚度3更醒目）
     StrokeColor = Color3.fromHex("FFFFFF"),
-    -- 缩小发光范围，降低视觉膨胀感
     GlowColor = Color3.fromHex("FFFFFF"),
-    GlowSize = 3, -- 从8改为3，发光扩散范围大幅减小
+    GlowSize = 3,
     GlowTransparency = 0.4,
-    -- 固定按钮尺寸，匹配第二个按钮的布局
-    Size = UDim2.new(0, 180, 0, 50) -- 自定义宽高，可根据实际需求调整
+    Size = UDim2.new(0, 180, 0, 50)
 })
 
 -- 最终方案：所有标签优先用基础图标，看不见的自动显示眼睛（无需手动排查）
