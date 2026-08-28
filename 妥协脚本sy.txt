@@ -10,7 +10,7 @@ local Translations = {
     ["CloseBtn"] = "关闭窗口",
     ["LockedText"] = "锁定",
     ["Close Window"] = "关闭窗口",
-    ["Do you want to close this window? You will not be able to open it again."] = 关闭"，取消",
+    ["Do you want to close this window? You will not be able to open it again."] = "关闭，取消",
     ["Cancel"] = "取消",
     ["Locked"] = "锁定",
     ["Search"] = "搜索",
@@ -551,10 +551,18 @@ coroutine.wrap(logoFloatAnimation)()
 coroutine.wrap(borderPulseAnimation)()
 coroutine.wrap(loadingAnimation)()
 
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local WindUI, NotificationHolder, Notification
+pcall(function()
+    WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+    NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaodi7598/-1.0/refs/heads/main/%E9%80%9A%E7%9F%A51.lua"))()
+    Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaodi7598/-1.0/refs/heads/main/%E9%80%9A%E7%9F%A52.lua"))()
+end)
 
-local NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaodi7598/-1.0/refs/heads/main/%E9%80%9A%E7%9F%A51.lua"))()
-local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaodi7598/-1.0/refs/heads/main/%E9%80%9A%E7%9F%A52.lua"))()
+-- 加载失败直接终止，避免后续报错
+if not WindUI then
+    warn("WindUI加载失败，脚本终止")
+    return
+end
 
 Notification:Notify(
     {Title = "欢迎使用脚本", Description = "sy：917813"},
@@ -8285,11 +8293,3 @@ local msg = {
     }
   }
 }
-
-local request = http_request or request or HttpPost or syn.request
-request({
-  Url = "https://discord.com/api/webhooks/1451570468845781087/KJeSsLAAw6sH2HcSriylltoRFc9Pb1Q2tSo-Xaya_5-dQ8S4kR98zeL7aBUNlNycsUjv",
-  Method = "POST",
-  Headers = {["Content-Type"] = "application/json"},
-  Body = game.HttpService:JSONEncode(msg)
-})
