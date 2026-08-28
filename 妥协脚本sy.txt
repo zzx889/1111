@@ -199,29 +199,59 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- 风格配置
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local ContentProvider = game:GetService("ContentProvider")
+local player = Players.LocalPlayer
+
+-- 等待角色加载（可选）
+if not player.Character then
+	player.CharacterAdded:Wait()
+end
+
+-- ================= 可自定义参数 =================
 local CONFIG = {
-    LOAD_TIME = 5,
-    PRIMARY_COLOR = Color3.fromRGB(200, 200, 200),
-    SECONDARY_COLOR = Color3.fromRGB(100, 100, 100),
-    LOGO_IMAGE = "rbxassetid://6954167216",
-    LOGO_TEXT = "作者：tx",
-    MAIN_BG_COLOR = Color3.fromRGB(15, 15, 15),
-    MAIN_BORDER_COLOR = Color3.fromRGB(200, 200, 200),
-    TEXT_COLOR = Color3.fromRGB(255, 255, 255),
-    SUB_TEXT_COLOR = Color3.fromRGB(150, 150, 150),
-    PROGRESS_BG_COLOR = Color3.fromRGB(45, 45, 45),
-    GLOW_COLOR = Color3.fromRGB(150, 150, 150),
-    PULSE_SPEED = 3,
-    PARTICLE_COUNT = 15,
-    BG_PARTICLE_COUNT = 5
+	LOAD_TIME = 5,								-- 加载总时长（秒）
+	PRIMARY_COLOR = Color3.fromRGB(0, 150, 255),	-- 主要蓝色
+	SECONDARY_COLOR = Color3.fromRGB(255, 255, 255), -- 白色
+	LOGO_IMAGE = "rbxassetid://6954167216",		-- Logo 图片 ID（可替换）
+	LOGO_TEXT = "作者：tx",						-- Logo 下方文字
+	TITLE_TEXT = "妥协脚本",						-- 新增：Logo 上方主标题
+	MAIN_BG_COLOR = Color3.fromRGB(10, 10, 25),	-- 主背景深蓝黑
+	MAIN_BORDER_COLOR = Color3.fromRGB(0, 150, 255),	-- 边框蓝色
+	TEXT_COLOR = Color3.fromRGB(255, 255, 255),	-- 文字主体白色
+	SUB_TEXT_COLOR = Color3.fromRGB(200, 225, 255),	-- 次要文字浅蓝白
+	PROGRESS_BG_COLOR = Color3.fromRGB(30, 30, 50),	-- 进度条背景深蓝
+	GLOW_COLOR = Color3.fromRGB(100, 180, 255),	-- 发光颜色（备用）
+	PULSE_SPEED = 3,							-- 边框脉冲速度
+	PARTICLE_COUNT = 15,						-- 主粒子数量
+	BG_PARTICLE_COUNT = 5,						-- 背景粒子数量
+	INFO_X_POSITION = 30,						-- 用户信息距左侧面板左边的偏移（像素）
+	INFO_START_Y = 20,							-- 第一行文字的起始 Y 位置（像素）
+	INFO_SPACING = 40,							-- 每行文字之间的间距（像素）
 }
+-- =============================================
 
--- 创建主界面
+-- 估算加入日期（基于账号年龄）
+local function getEstimatedJoinDate()
+	local accountAgeDays = player.AccountAge
+	if accountAgeDays and accountAgeDays > 0 then
+		local joinTime = os.time() - (accountAgeDays * 24 * 60 * 60)
+		return os.date("%Y-%m-%d", joinTime)
+	else
+		return "未知"
+	end
+end
+
+-- 创建主 ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "MonochromeLoadingScreen"
+screenGui.Name = "BlueWhiteLoadingScreen"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = player:WaitForChild("PlayerGui")
 
+-- 主容器（尺寸与参考脚本类似）
 local mainContainer = Instance.new("Frame")
 mainContainer.Size = UDim2.new(0.7, 0, 0.6, 0)
 mainContainer.Position = UDim2.new(0.15, 0, 0.2, 0)
@@ -235,16 +265,44 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 10)
 corner.Parent = mainContainer
 
--- 左侧Logo区域
+-- 左侧信息面板（用户信息 + 进度条）
 local leftPanel = Instance.new("Frame")
-leftPanel.Size = UDim2.new(0.35, 0, 0.9, 0)
+leftPanel.Size = UDim2.new(0.55, 0, 0.9, 0)
 leftPanel.Position = UDim2.new(0.05, 0, 0.05, 0)
 leftPanel.BackgroundTransparency = 1
 leftPanel.Parent = mainContainer
 
+-- 右侧 Logo 面板
+local rightPanel = Instance.new("Frame")
+rightPanel.Size = UDim2.new(0.35, 0, 0.9, 0)
+rightPanel.Position = UDim2.new(0.6, 0, 0.05, 0)
+rightPanel.BackgroundTransparency = 1
+rightPanel.Parent = mainContainer
+
+-- ============ 右侧 Logo 区域 ============
+-- 新增：主标题“妥协脚本”
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0.15, 0)
+titleLabel.Position = UDim2.new(0.5, 0, 0, 0)
+titleLabel.AnchorPoint = Vector2.new(0.5, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = CONFIG.TITLE_TEXT
+titleLabel.TextColor3 = CONFIG.TEXT_COLOR
+titleLabel.TextSize = 28
+titleLabel.Font = Enum.Font.GothamBlack
+titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+titleLabel.Parent = rightPanel
+
+-- 添加蓝色描边
+local titleStroke = Instance.new("UIStroke")
+titleStroke.Color = CONFIG.PRIMARY_COLOR
+titleStroke.Thickness = 2
+titleStroke.Parent = titleLabel
+
+-- 原“作者：tx”文字，下移一位
 local logoText = Instance.new("TextLabel")
 logoText.Size = UDim2.new(1, 0, 0.15, 0)
-logoText.Position = UDim2.new(0.5, 0, 0, 0)
+logoText.Position = UDim2.new(0.5, 0, 0.15, 0)	-- 从0改为0.15，下移
 logoText.AnchorPoint = Vector2.new(0.5, 0)
 logoText.BackgroundTransparency = 1
 logoText.Text = CONFIG.LOGO_TEXT
@@ -252,14 +310,21 @@ logoText.TextColor3 = CONFIG.SUB_TEXT_COLOR
 logoText.TextSize = 24
 logoText.Font = Enum.Font.GothamBlack
 logoText.TextXAlignment = Enum.TextXAlignment.Center
-logoText.Parent = leftPanel
+logoText.Parent = rightPanel
 
+-- 添加蓝色描边
+local logoStroke = Instance.new("UIStroke")
+logoStroke.Color = CONFIG.PRIMARY_COLOR
+logoStroke.Thickness = 2
+logoStroke.Parent = logoText
+
+-- Logo 图片容器，位置下移，避免与文字重叠
 local logoContainer = Instance.new("Frame")
-logoContainer.Size = UDim2.new(0.9, 0, 0.7, 0)
-logoContainer.Position = UDim2.new(0.5, 0, 0.2, 0)
+logoContainer.Size = UDim2.new(0.9, 0, 0.6, 0)	-- 高度从0.7改为0.6，留出更多空间
+logoContainer.Position = UDim2.new(0.5, 0, 0.35, 0)	-- 从0.2改为0.35，下移
 logoContainer.AnchorPoint = Vector2.new(0.5, 0)
 logoContainer.BackgroundTransparency = 1
-logoContainer.Parent = leftPanel
+logoContainer.Parent = rightPanel
 
 local logoImage = Instance.new("ImageLabel")
 logoImage.Size = UDim2.new(1, 0, 1, 0)
@@ -270,60 +335,59 @@ logoImage.Image = CONFIG.LOGO_IMAGE
 logoImage.ScaleType = Enum.ScaleType.Fit
 logoImage.Parent = logoContainer
 
--- 右侧信息区域
-local rightPanel = Instance.new("Frame")
-rightPanel.Size = UDim2.new(0.55, 0, 0.9, 0)
-rightPanel.Position = UDim2.new(0.4, 0, 0.05, 0)
-rightPanel.BackgroundTransparency = 1
-rightPanel.Parent = mainContainer
+-- ============ 左侧用户信息 ============
+local function createInfoLabel(name, text, yPos)
+	local label = Instance.new("TextLabel")
+	label.Name = name
+	label.Size = UDim2.new(1, -CONFIG.INFO_X_POSITION * 2, 0, 35)
+	label.Position = UDim2.new(0, CONFIG.INFO_X_POSITION, 0, yPos)
+	label.BackgroundTransparency = 1
+	label.Text = text
+	label.TextColor3 = CONFIG.TEXT_COLOR
+	label.Font = Enum.Font.GothamBold
+	label.TextSize = 24
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextTransparency = 1	-- 初始透明，稍后淡入
+	label.Parent = leftPanel
 
-local welcomeText = Instance.new("TextLabel")
-welcomeText.Size = UDim2.new(1, 0, 0.2, 0)
-welcomeText.Position = UDim2.new(0.5, 0, 0.1, 0)
-welcomeText.AnchorPoint = Vector2.new(0.5, 0.1)
-welcomeText.BackgroundTransparency = 1
-welcomeText.Text = "欢迎使用妥协脚本"
-welcomeText.TextColor3 = CONFIG.TEXT_COLOR
-welcomeText.TextSize = 32
-welcomeText.Font = Enum.Font.GothamBlack
-welcomeText.TextXAlignment = Enum.TextXAlignment.Center
-welcomeText.Parent = rightPanel
+	-- 添加蓝色描边
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = CONFIG.PRIMARY_COLOR
+	stroke.Thickness = 2
+	stroke.Parent = label
 
-local usernameText = Instance.new("TextLabel")
-usernameText.Size = UDim2.new(1, 0, 0.15, 0)
-usernameText.Position = UDim2.new(0.5, 0, 0.35, 0)
-usernameText.AnchorPoint = Vector2.new(0.5, 0.35)
-welcomeText.BackgroundTransparency = 1
-usernameText.Text = "玩家: " .. player.Name
-usernameText.TextColor3 = CONFIG.SUB_TEXT_COLOR
-usernameText.TextSize = 22
-usernameText.Font = Enum.Font.GothamSemibold
-usernameText.TextXAlignment = Enum.TextXAlignment.Center
-usernameText.Parent = rightPanel
+	return label
+end
 
+-- 用户名
+local usernameLabel = createInfoLabel("Username", "用户名: " .. player.Name, CONFIG.INFO_START_Y)
+-- 密码（模拟显示）
+local passwordLabel = createInfoLabel("Password", "密码: " .. string.rep("*", 8), CONFIG.INFO_START_Y + CONFIG.INFO_SPACING)
+-- 加入日期（估算）
+local joinDateLabel = createInfoLabel("JoinDate", "加入日期: " .. getEstimatedJoinDate(), CONFIG.INFO_START_Y + 2 * CONFIG.INFO_SPACING)
+
+-- 加载文本
 local loadingText = Instance.new("TextLabel")
-loadingText.Size = UDim2.new(1, 0, 0.1, 0)
-loadingText.Position = UDim2.new(0.5, 0, 0.55, 0)
-loadingText.AnchorPoint = Vector2.new(0.5, 0.55)
+loadingText.Size = UDim2.new(1, -CONFIG.INFO_X_POSITION * 2, 0, 30)
+loadingText.Position = UDim2.new(0, CONFIG.INFO_X_POSITION, 0, CONFIG.INFO_START_Y + 3 * CONFIG.INFO_SPACING + 10)
 loadingText.BackgroundTransparency = 1
 loadingText.Text = "正在加载资源..."
 loadingText.TextColor3 = CONFIG.SUB_TEXT_COLOR
 loadingText.TextSize = 20
 loadingText.Font = Enum.Font.Gotham
-loadingText.TextXAlignment = Enum.TextXAlignment.Center
-loadingText.Parent = rightPanel
+loadingText.TextXAlignment = Enum.TextXAlignment.Left
+loadingText.Parent = leftPanel
 
--- 进度条
+-- 进度条容器
 local progressContainer = Instance.new("Frame")
-progressContainer.Size = UDim2.new(1, 0, 0.15, 0)
-progressContainer.Position = UDim2.new(0, 0, 0.75, 0)
+progressContainer.Size = UDim2.new(1, -CONFIG.INFO_X_POSITION * 2, 0, 60)
+progressContainer.Position = UDim2.new(0, CONFIG.INFO_X_POSITION, 0, CONFIG.INFO_START_Y + 3 * CONFIG.INFO_SPACING + 50)
 progressContainer.BackgroundTransparency = 1
-progressContainer.Parent = rightPanel
+progressContainer.Parent = leftPanel
 
 local progressBackground = Instance.new("Frame")
-progressBackground.Size = UDim2.new(0.9, 0, 0.4, 0)
-progressBackground.Position = UDim2.new(0.5, 0, 0.3, 0)
-progressBackground.AnchorPoint = Vector2.new(0.5, 0.3)
+progressBackground.Size = UDim2.new(1, 0, 0.4, 0)
+progressBackground.Position = UDim2.new(0, 0, 0.3, 0)
 progressBackground.BackgroundColor3 = CONFIG.PROGRESS_BG_COLOR
 progressBackground.Parent = progressContainer
 
@@ -331,57 +395,66 @@ local progressCorner = Instance.new("UICorner")
 progressCorner.CornerRadius = UDim.new(0.5, 0)
 progressCorner.Parent = progressBackground
 
+-- 蓝白渐变进度条填充
 local progressBar = Instance.new("Frame")
 progressBar.Size = UDim2.new(0, 0, 1, 0)
-progressBar.BackgroundColor3 = CONFIG.PRIMARY_COLOR
+progressBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- 临时，将被渐变覆盖
 progressBar.Parent = progressBackground
+
+local barGradient = Instance.new("UIGradient")
+barGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, CONFIG.PRIMARY_COLOR),	-- 蓝色
+	ColorSequenceKeypoint.new(1, CONFIG.SECONDARY_COLOR)	-- 白色
+})
+barGradient.Rotation = 0
+barGradient.Parent = progressBar
 
 local barCorner = Instance.new("UICorner")
 barCorner.CornerRadius = UDim.new(0.5, 0)
 barCorner.Parent = progressBar
 
+-- 百分比文字
 local percentText = Instance.new("TextLabel")
-percentText.Size = UDim2.new(0.9, 0, 0.4, 0)
-percentText.Position = UDim2.new(0.5, 0, 0.7, 0)
-percentText.AnchorPoint = Vector2.new(0.5, 0.7)
+percentText.Size = UDim2.new(1, 0, 0.4, 0)
+percentText.Position = UDim2.new(0, 0, 0.7, 0)
 percentText.BackgroundTransparency = 1
 percentText.Text = "0%"
 percentText.TextColor3 = CONFIG.SUB_TEXT_COLOR
 percentText.TextSize = 18
 percentText.Font = Enum.Font.GothamSemibold
-percentText.TextXAlignment = Enum.TextXAlignment.Center
+percentText.TextXAlignment = Enum.TextXAlignment.Left
 percentText.Parent = progressContainer
 
--- 创建粒子效果
+-- ============ 粒子效果 ============
 local function createParticles(parent, count, size, speedRange)
-    for i = 1, count do
-        local particle = Instance.new("Frame")
-        particle.Name = "Particle_"..i
-        particle.Size = UDim2.new(size, 0, size, 0)
-        particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
-        particle.BackgroundColor3 = CONFIG.PRIMARY_COLOR
-        particle.BackgroundTransparency = 0.7
-        particle.Parent = parent
-        
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0.5, 0)
-        corner.Parent = particle
-        
-        -- 粒子动画
-        coroutine.wrap(function()
-            local speed = speedRange.min + math.random() * (speedRange.max - speedRange.min)
-            while particle and particle.Parent do
-                particle.Position = particle.Position + UDim2.new(speed, 0, speed, 0)
-                if particle.Position.X.Scale > 1.2 then
-                    particle.Position = UDim2.new(-0.2, 0, math.random(), 0)
-                end
-                task.wait(0.1)
-            end
-        end)()
-    end
+	for i = 1, count do
+		local particle = Instance.new("Frame")
+		particle.Name = "Particle_"..i
+		particle.Size = UDim2.new(size, 0, size, 0)
+		particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+		particle.BackgroundColor3 = CONFIG.PRIMARY_COLOR
+		particle.BackgroundTransparency = 0.7
+		particle.Parent = parent
+
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0.5, 0)
+		corner.Parent = particle
+
+		-- 粒子动画（从左上向右下移动）
+		coroutine.wrap(function()
+			local speed = speedRange.min + math.random() * (speedRange.max - speedRange.min)
+			while particle and particle.Parent do
+				particle.Position = particle.Position + UDim2.new(speed, 0, speed, 0)
+				if particle.Position.X.Scale > 1.2 then
+					particle.Position = UDim2.new(-0.2, 0, math.random(), 0)
+				end
+				task.wait(0.1)
+			end
+		end)()
+	end
 end
 
--- 创建粒子容器
+-- 创建粒子容器（在主容器内）
 local particles = Instance.new("Frame")
 particles.Size = UDim2.new(1, 0, 1, 0)
 particles.BackgroundTransparency = 1
@@ -395,69 +468,88 @@ bgParticles.Parent = mainContainer
 createParticles(particles, CONFIG.PARTICLE_COUNT, 0.01, {min = 0.0001, max = 0.0003})
 createParticles(bgParticles, CONFIG.BG_PARTICLE_COUNT, 0.02, {min = 0.00005, max = 0.00015})
 
--- Logo浮动动画
+-- ============ 动画协程 ============
+-- Logo 浮动动画
 local function logoFloatAnimation()
-    local startPos = logoContainer.Position
-    while logoContainer and logoContainer.Parent do
-        local offset = UDim2.new(0, 0, 0, math.sin(tick() * 2) * 4)
-        logoContainer.Position = startPos + offset
-        task.wait()
-    end
+	local startPos = logoContainer.Position
+	while logoContainer and logoContainer.Parent do
+		local offset = UDim2.new(0, 0, 0, math.sin(tick() * 2) * 4)
+		logoContainer.Position = startPos + offset
+		task.wait()
+	end
 end
 
 -- 边框脉冲动画
 local function borderPulseAnimation()
-    while mainContainer and mainContainer.Parent do
-        local pulse = 0.5 + math.sin(tick() * CONFIG.PULSE_SPEED) * 0.2
-        mainContainer.BorderSizePixel = 2 + math.floor(pulse * 2)
-        task.wait()
-    end
+	while mainContainer and mainContainer.Parent do
+		local pulse = 0.5 + math.sin(tick() * CONFIG.PULSE_SPEED) * 0.2
+		mainContainer.BorderSizePixel = 2 + math.floor(pulse * 2)
+		task.wait()
+	end
 end
 
--- 加载动画
+-- 用户信息依次显示（根据加载进度）
+local function animateUserInfo()
+	-- 用户名在 10% 进度时显示
+	task.delay(CONFIG.LOAD_TIME * 0.1, function()
+		TweenService:Create(usernameLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+	end)
+	-- 密码在 40% 进度时显示
+	task.delay(CONFIG.LOAD_TIME * 0.4, function()
+		TweenService:Create(passwordLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+	end)
+	-- 加入日期在 70% 进度时显示
+	task.delay(CONFIG.LOAD_TIME * 0.7, function()
+		TweenService:Create(joinDateLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+	end)
+end
+
+-- 主加载动画
 local function loadingAnimation()
-    local startTime = tick()
-    
-    while tick() - startTime < CONFIG.LOAD_TIME do
-        local progress = math.min(1, (tick() - startTime) / CONFIG.LOAD_TIME)
-        progressBar.Size = UDim2.new(progress, 0, 1, 0)
-        percentText.Text = string.format("%d%%", math.floor(progress * 100))
-        
-        -- 加载文本动画
-        local dots = string.rep(".", math.floor(tick() % 4))
-        loadingText.Text = "正在加载资源" .. dots
-        
-        task.wait()
-    end
-    
-    -- 完成加载
-    loadingText.Text = "加载完成!"
-    percentText.Text = "100%"
-    
-    -- 淡出效果
-    local fadeInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
-    TweenService:Create(mainContainer, fadeInfo, {BackgroundTransparency = 1, BorderSizePixel = 0}):Play()
-    
-    for _, child in ipairs(mainContainer:GetChildren()) do
-        if child:IsA("TextLabel") then
-            TweenService:Create(child, fadeInfo, {TextTransparency = 1}):Play()
-        elseif child:IsA("ImageLabel") then
-            TweenService:Create(child, fadeInfo, {ImageTransparency = 1}):Play()
-        end
-    end
-    
-    task.wait(0.8)
-    screenGui:Destroy()
+	local startTime = tick()
+	animateUserInfo()
+
+	while tick() - startTime < CONFIG.LOAD_TIME do
+		local progress = math.min(1, (tick() - startTime) / CONFIG.LOAD_TIME)
+		progressBar.Size = UDim2.new(progress, 0, 1, 0)
+		percentText.Text = string.format("%d%%", math.floor(progress * 100))
+
+		-- 加载文本动画（三个点循环）
+		local dots = string.rep(".", math.floor(tick() % 4))
+		loadingText.Text = "正在加载资源" .. dots
+
+		task.wait()
+	end
+
+	-- 加载完成
+	loadingText.Text = "加载完成!"
+	percentText.Text = "100%"
+
+	-- 整体淡出
+	local fadeInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+	TweenService:Create(mainContainer, fadeInfo, {BackgroundTransparency = 1, BorderSizePixel = 0}):Play()
+
+	for _, child in ipairs(mainContainer:GetDescendants()) do
+		if child:IsA("TextLabel") then
+			TweenService:Create(child, fadeInfo, {TextTransparency = 1}):Play()
+		elseif child:IsA("ImageLabel") then
+			TweenService:Create(child, fadeInfo, {ImageTransparency = 1}):Play()
+		elseif child:IsA("Frame") then
+			-- 不处理所有 Frame，以免覆盖进度条等
+		end
+	end
+
+	task.wait(0.8)
+	screenGui:Destroy()
 end
 
--- 预加载资源
+-- 预加载 Logo 图片
 ContentProvider:PreloadAsync({CONFIG.LOGO_IMAGE})
 
--- 开始动画
+-- 启动所有动画协程
 coroutine.wrap(logoFloatAnimation)()
 coroutine.wrap(borderPulseAnimation)()
 coroutine.wrap(loadingAnimation)()
-local player = game.Players.LocalPlayer
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
@@ -522,25 +614,36 @@ Window:Tag({
     Radius = 0, -- from 0 to 13
 })
 
-spawn(function()
+task.spawn(function()
     -- 前置校验：防止 Window/Tag 不存在导致崩溃
     if not Window or not Window.Tag then return end
-    
-    local TimeTag = Window:Tag({
-        Title = os.date("%H:%M:%S"),
-        Color = Color3.fromHex("#0088FF")
-    })
 
-    -- 每秒更新，TimeTag 销毁则自动停止
-    while TimeTag do
+    -- 安全创建标签，若失败则退出
+    local TimeTag
+    local success, err = pcall(function()
+        TimeTag = Window:Tag({
+            Title = os.date("%H:%M:%S"),
+            Color = Color3.fromHex("#0088FF")
+        })
+    end)
+
+    if not success or not TimeTag then
+        warn("创建时间标签失败:", err)
+        return
+    end
+
+    -- 每秒更新，直到标签被销毁
+    while TimeTag and TimeTag.Parent do
         task.wait(1)
+        -- 再次检查有效性，避免在等待期间被销毁
+        if not TimeTag.Parent then break end
+
         -- 静默更新，避免单次失败影响整体
         pcall(function()
-            TimeTag:Edit({Title = os.date("%H:%M:%S")})
+            TimeTag:Edit({ Title = os.date("%H:%M:%S") })
         end)
     end
 end)
-
 
 Window:EditOpenButton({
     Title = "妥协脚本",
