@@ -941,6 +941,7 @@ local LanguageService = {
         ["[🎅🎅🎅🎅🏻]在筏子上生存"] = {en = "Raft Survival", ja = "いかだでサバイバル"},
         ["挂杆塔"] = {en = "Pole Tower", ja = "ポールタワー"},
         ["终极采矿大亨"] = {en = "Ultimate Mining", ja = "究極の採掘"},
+        ["更多服务器"] = {en = "More Servers", ja = "サーバーを増やす"},
         
         -- 功能描述文本
         ["飞行\n\n飞行👍"] = {en = "Fly\n\nFlight👍", ja = "飛行\n\n飛行👍"},
