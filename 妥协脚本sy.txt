@@ -5,12 +5,12 @@ local RunService = game:GetService("RunService")
 -- 汉化文本配置（整合原脚本所有翻译项，不重复）
 local Translations = {
     ["CloseWindowTitle"] = "关闭窗口",
-    ["CloseWindowConfirm"] = "求你了别关脚本😭😭",
+    ["CloseWindowConfirm"] = "不要关闭sy",
     ["CancelBtn"] = "取消",
     ["CloseBtn"] = "关闭窗口",
     ["LockedText"] = "锁定",
     ["Close Window"] = "关闭窗口",
-    ["Do you want to close this window? You will not be able to open it again."] = "求你了别关脚本😭😭，再用用呗🙏🙏🙏",
+    ["Do you want to close this window? You will not be able to open it again."] = 关闭"，取消",
     ["Cancel"] = "取消",
     ["Locked"] = "锁定",
     ["Search"] = "搜索",
@@ -580,7 +580,7 @@ game:GetService("Players").LocalPlayer.Idled:connect(function()
 end)
 
 local Window = WindUI:CreateWindow({
-    Title = '<font color="#FF3333">妥</font><font color="#FF9933">协</font><font color="#FFFF33">脚</font><font color="#33FF33">本</font>    ',  
+    Title = '<font color="#FF3333">妥</font><font color="#FF9933">协</font><font color="#FFFF33">脚</font><font color="#33FF33">本</font>',
     Icon = "badge-check",
     Author = "作者:妥协",
     Folder = "WindUI_Example",
@@ -602,6 +602,117 @@ local Window = WindUI:CreateWindow({
     HideSearchBar = false,
     Background = "https://i.ibb.co/VcTJh7Sg/quality-restoration-20260826230136407-png.jpg",
 })
+
+-- ========== 创建“各大服务器脚本”折叠分组 ==========
+local gameTitles = {
+    "DOORS", "rooms&doors", "压力,doors", "动感星期五", "压力",
+    "成为乞丐", "磁铁模拟器", "建造一架飞机", "勘探中", "法宝模拟器",
+    "在披萨店工作", "战斗勇士", "一次尘土的旅行", "破坏者谜团2", "模仿者",
+    "火箭发射模拟器", "只因剑", "森林里的99夜", "旗帜战争", "逃出建筑",
+    "打墙模拟器", "生存巨人", "健身房之星模拟器", "死铁轨", "墨水游戏",
+    "自然灾害模拟器", "穷小子打工记", "最后的黎明", "索纳里亚世界",
+    "河北唐县", "被遗弃", "骨折模拟器", "地下城任务", "极速传奇",
+    "一路向西", "汽车经销商大亨", "兵工厂", "by手腕", "超级足球联赛",
+    "战争大亨", "吃掉世界", "隐藏尸体", "猎杀僵尸", "建造汽车",
+    "原始追求/原始追击", "攀爬与滑行", "拔出一把剑", "暴力区",
+    "邪恶的事情会发生什么", "住宅大屠杀", "犯罪", "封锁战线",
+    "终极战场", "最强的拳击模拟器", "排球传奇", "竞争对手",
+    "柔术无限", "超速射击", "英雄战场", "蓝色锁", "无标题的拳击",
+    "越狱", "生存战争", "停电", "战争机器", "别碰按钮",
+    "在超级商店过夜生存", "失落的前线", "建造一个奥比",
+    "聊天室💬 [阿拉伯语]", "[✨2倍经验✨]植物进化",
+    "🦘跳跃去见辫inrots！", "钓鱼！ 🐟", "[史莱姆]键盘ASMR塔",
+    "[🎣鱼+🐶宠物]安吉尔山🥴", "🍰 烘焙或死亡 💀", "打破朋友 🦴",
+    "【⚔️公会战争】[第38卷]修炼：凡人至仙人", "杀人犯对警长决斗",
+    "🥊拳击怪兽！ 🥊", "隐形藏匿", "[第一人称射击]电影上传者",
+    "成为杀手级重码", "[✨] NPC或者死！ 💢", "免费UGC✨奥比",
+    " [1.0] 基础论文教育 RP", "[🎅🏻]在筏子上生存", "挂杆塔",
+    "终极采矿大亨", "偷一个蛋", "忍者传奇", "巨剑骑士", "吃吃世界",
+    "doors"
+}
+
+local gameSection = Window:Section({
+    Title = "各大服务器脚本",
+    Opened = false
+})
+
+local function getIcon(title)
+    local icons = {
+        ["简介"] = "info", ["通用"] = "cog", ["通用2"] = "wrench",
+        ["通用3"] = "settings", ["范围与旋转"] = "target",
+        ["音乐"] = "music", ["各大脚本"] = "code", ["FE"] = "server",
+        ["DOORS"] = "door-closed", ["rooms&doors"] = "door-closed",
+        ["压力,doors"] = "door-closed", ["动感星期五"] = "drum",
+        ["压力"] = "target", ["成为乞丐"] = "coins", ["磁铁模拟器"] = "magnet",
+        ["建造一架飞机"] = "plane", ["勘探中"] = "compass",
+        ["法宝模拟器"] = "star", ["在披萨店工作"] = "utensils",
+        ["战斗勇士"] = "sword", ["一次尘土的旅行"] = "sun",
+        ["破坏者谜团2"] = "puzzle", ["模仿者"] = "copy",
+        ["火箭发射模拟器"] = "rocket", ["只因剑"] = "sword",
+        ["森林里的99夜"] = "leaf", ["旗帜战争"] = "flag",
+        ["逃出建筑"] = "user", ["打墙模拟器"] = "hammer",
+        ["生存巨人"] = "user", ["健身房之星模拟器"] = "dumbbell",
+        ["死铁轨"] = "target", ["墨水游戏"] = "skull",
+        ["自然灾害模拟器"] = "cloud", ["穷小子打工记"] = "briefcase",
+        ["最后的黎明"] = "sun", ["索纳里亚世界"] = "globe",
+        ["河北唐县"] = "map-pin", ["被遗弃"] = "ghost",
+        ["骨折模拟器"] = "heart", ["地下城任务"] = "sword",
+        ["极速传奇"] = "car", ["一路向西"] = "arrow-right",
+        ["汽车经销商大亨"] = "car", ["兵工厂"] = "gavel",
+        ["by手腕"] = "hand", ["超级足球联赛"] = "globe",
+        ["战争大亨"] = "eye", ["吃掉世界"] = "utensils",
+        ["隐藏尸体"] = "ghost", ["猎杀僵尸"] = "skull",
+        ["建造汽车"] = "eye", ["原始追求/原始追击"] = "eye",
+        ["攀爬与滑行"] = "mountain", ["拔出一把剑"] = "eye",
+        ["暴力区"] = "eye", ["邪恶的事情会发生什么"] = "skull",
+        ["住宅大屠杀"] = "house", ["犯罪"] = "gavel",
+        ["封锁战线"] = "shield", ["终极战场"] = "eye",
+        ["最强的拳击模拟器"] = "eye", ["排球传奇"] = "volleyball",
+        ["竞争对手"] = "users", ["柔术无限"] = "eye",
+        ["超速射击"] = "eye", ["英雄战场"] = "star",
+        ["蓝色锁"] = "lock", ["无标题的拳击"] = "eye",
+        ["越狱"] = "eye", ["生存战争"] = "eye", ["停电"] = "power-off",
+        ["战争机器"] = "eye", ["别碰按钮"] = "eye",
+        ["在超级商店过夜生存"] = "store", ["失落的前线"] = "eye",
+        ["建造一个奥比"] = "eye", ["聊天室💬 [阿拉伯语]"] = "eye",
+        ["[✨2倍经验✨]植物进化"] = "leaf",
+        ["🦘跳跃去见辫inrots！"] = "arrow-up",
+        ["钓鱼！ 🐟"] = "fish", ["[史莱姆]键盘ASMR塔"] = "keyboard",
+        ["[🎣鱼+🐶宠物]安吉尔山🥴"] = "eye",
+        ["🍰 烘焙或死亡 💀"] = "cake", ["打破朋友 🦴"] = "eye",
+        ["【⚔️公会战争】[第38卷]修炼：凡人至仙人"] = "scroll",
+        ["杀人犯对警长决斗"] = "eye", ["🥊拳击怪兽！ 🥊"] = "eye",
+        ["隐形藏匿"] = "eye", ["[第一人称射击]电影上传者"] = "camera",
+        ["成为杀手级重码"] = "skull", ["[✨] NPC或者死！ 💢"] = "user",
+        ["免费UGC✨奥比"] = "gift", [" [1.0] 基础论文教育 RP"] = "book",
+        ["[🎅🏻]在筏子上生存"] = "life-ring", ["挂杆塔"] = "eye",
+        ["终极采矿大亨"] = "pickaxe", ["偷一个蛋"] = "egg",
+        ["忍者传奇"] = "ninja", ["巨剑骑士"] = "sword",
+        ["吃吃世界"] = "utensils", ["doors"] = "door-closed",
+        ["玩家交互"] = "users",
+    }
+    return icons[title] or "eye"
+end
+
+-- 覆盖 Tab 函数
+local originalTab = Tab
+Tab = function(title)
+    local isGame = false
+    for _, gt in ipairs(gameTitles) do
+        if title == gt then
+            isGame = true
+            break
+        end
+    end
+
+    if isGame then
+        return gameSection:Tab({ Title = title, Icon = getIcon(title) })
+    else
+        return Window:Tab({ Title = title, Icon = getIcon(title) })
+    end
+end
+
+print("✅ 已创建“各大服务器脚本”折叠分组，其余标签页保持不变")
 
 Window:Tag({
     Title = "诞生于2026年暑假",
@@ -662,121 +773,6 @@ Window:EditOpenButton({
     GlowTransparency = 0.4,
     Size = UDim2.new(0, 180, 0, 50)
 })
-
--- 最终方案：所有标签优先用基础图标，看不见的自动显示眼睛（无需手动排查）
-function Tab(a)
-    local tabIcon = ({
-        ["简介"] = "info",
-        ["通用"] = "cog",
-        ["通用2"] = "wrench",
-        ["通用3"] = "settings",
-        ["范围与旋转"] = "target",
-        ["音乐"] = "music",
-        ["各大脚本"] = "code",
-        ["FE"] = "server",
-        ["DOORS"] = "door-closed",
-        ["rooms&doors"] = "door-closed",
-        ["压力,doors"] = "door-closed",
-        ["动感星期五"] = "drum",
-        ["压力"] = "target", -- 已验证生效
-        ["成为乞丐"] = "coins", -- 已验证生效
-        ["磁铁模拟器"] = "magnet",
-        ["建造一架飞机"] = "plane",
-        ["勘探中"] = "compass",
-        ["法宝模拟器"] = "star",
-        ["在披萨店工作"] = "utensils", -- 已验证生效
-        ["战斗勇士"] = "sword",
-        ["一次尘土的旅行"] = "sun", -- 道路图标，贴合旅行场景，已验证生效
-        ["破坏者谜团2"] = "puzzle",
-        ["模仿者"] = "copy",
-        ["火箭发射模拟器"] = "rocket",
-        ["只因剑"] = "sword",
-        ["森林里的99夜"] = "leaf",
-        ["旗帜战争"] = "flag",
-        ["逃出建筑"] = "user",
-        ["打墙模拟器"] = "hammer",
-        ["生存巨人"] = "user",
-        ["健身房之星模拟器"] = "dumbbell",
-        ["死铁轨"] = "target",
-        ["墨水游戏"] = "skull",
-        ["自然灾害模拟器"] = "cloud",
-        ["穷小子打工记"] = "briefcase",
-        ["最后的黎明"] = "sun",
-        ["索纳里亚世界"] = "globe",
-        ["河北唐县"] = "map-pin",
-        ["被遗弃"] = "ghost",
-        ["骨折模拟器"] = "heart",
-        ["地下城任务"] = "sword",
-        ["极速传奇"] = "car",
-        ["一路向西"] = "arrow-right",
-        ["汽车经销商大亨"] = "car",
-        ["兵工厂"] = "gavel",
-        ["by手腕"] = "hand",
-        ["超级足球联赛"] = "globe",
-        ["战争大亨"] = "eye",
-        ["吃掉世界"] = "utensils",
-        ["隐藏尸体"] = "ghost",
-        ["猎杀僵尸"] = "skull",
-        ["建造汽车"] = "eye",
-        ["原始追求/原始追击"] = "eye",
-        ["攀爬与滑行"] = "mountain",
-        ["拔出一把剑"] = "eye",
-        ["暴力区"] = "eye",
-        ["邪恶的事情会发生什么"] = "skull",
-        ["住宅大屠杀"] = "house",
-        ["犯罪"] = "gavel",
-        ["封锁战线"] = "shield",
-        ["终极战场"] = "eye",
-        ["最强的拳击模拟器"] = "eye",
-        ["排球传奇"] = "volleyball",
-        ["竞争对手"] = "users",
-        ["柔术无限"] = "eye",
-        ["超速射击"] = "eye",
-        ["英雄战场"] = "star",
-        ["蓝色锁"] = "lock",
-        ["无标题的拳击"] = "eye",
-        ["越狱"] = "eye",
-        ["生存战争"] = "eye",
-        ["停电"] = "power-off",
-        ["战争机器"] = "eye",
-        ["别碰按钮"] = "eye",
-        ["在超级商店过夜生存"] = "store",
-        ["失落的前线"] = "eye",
-        ["建造一个奥比"] = "eye",
-        ["聊天室💬 [阿拉伯语]"] = "eye",
-        ["[✨2倍经验✨]植物进化"] = "leaf",
-        ["🦘跳跃去见辫inrots！"] = "arrow-up",
-        ["钓鱼！ 🐟"] = "fish",
-        ["[史莱姆]键盘ASMR塔"] = "keyboard",
-        ["[🎣鱼+🐶宠物]安吉尔山🥴"] = "eye",
-        ["🍰 烘焙或死亡 💀"] = "cake",
-        ["打破朋友 🦴"] = "eye",
-        ["【⚔️公会战争】[第38卷]修炼：凡人至仙人"] = "scroll",
-        ["杀人犯对警长决斗"] = "eye",
-        ["🥊拳击怪兽！ 🥊"] = "eye",
-        ["隐形藏匿"] = "eye",
-        ["[第一人称射击]电影上传者"] = "camera",
-        ["成为杀手级重码"] = "skull",
-        ["[✨] NPC或者死！ 💢"] = "user",
-        ["免费UGC✨奥比"] = "gift",
-        [" [1.0] 基础论文教育 RP"] = "book",
-        ["在筏子上生存"] = "life-ring",
-        ["挂杆塔"] = "eye",
-        ["捉迷藏"] = "eye",
-        ["[更新]🎉动漫拍打塔 🖐️"] = "hand-paper",
-        ["[🏈标签]音速速度模拟器"] = "bolt", -- 修复：补充缺失的逗号
-        ["终极采矿大亨"] = "pickaxe", -- 采矿核心图标，贴合游戏玩法
-        ["无家可归模拟器"] = "person", -- 新增：无家可归模拟器图标，用person贴合人物场景
-        ["亡命速递"] = "life-ring",
-    })[a] 
-
-    -- 关键修复：如果图标无法显示（返回nil/空值），直接强制设为眼睛
-    if not tabIcon or tabIcon == "" then
-        tabIcon = "eye"
-    end
-
-    return Window:Tab({Title = a, Icon = tabIcon})
-end
 
 -- 其他函数保留不变
 function Button(a, b, c)
@@ -2174,8 +2170,8 @@ Window:Divider()
 local Tab102 = Tab("更多服务器")
 
 local Paragraph = Tab0:Paragraph({
-    Title = "妥协脚本",
-    Desc = "点击复制",
+    Title = "",
+    Desc = "",
     
     -- 视觉设置
     Image = "https://i.ibb.co/KzpGVsQR/153941.png", -- 背景图片
@@ -2206,7 +2202,7 @@ local Paragraph = Tab0:Paragraph({
                     -- 显示成功通知
                     game:GetService("StarterGui"):SetCore("SendNotification", {
                         Title = "✅ 复制成功",
-                        Text = "已",
+                        Text = "",
                         Icon = "rbxassetid://7040347038",
                         Duration = 5,
                         Button1 = "确定",
